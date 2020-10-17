@@ -12,7 +12,7 @@
 int main(int argc, char **argv)
 {
     // Operation result returned by the simulated annealing arlgorithm
-    int result;
+    int result = -1;
     SimulatedAnnealing *sa = NULL;
 
     // Parse command line input

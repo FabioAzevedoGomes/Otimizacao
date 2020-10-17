@@ -2,23 +2,28 @@
 
 State *State::best;
 
-State::State(std::vector<int> colors)
+State::State(std::vector<std::vector<bool>> vertex_has_color_, std::vector<bool> color_is_used_)
 {
-    // Fill state node list
-    this->node_colors = colors;
+    this->vertex_has_color = vertex_has_color_;
+    this->color_is_used = color_is_used_;
 
-    // Start value on 0
-    this->val = 0;
-
-    // Calculate state value
-    for (auto i = this->node_colors.begin(); i != this->node_colors.end(); ++i)
-        this->val += *i;
+    for (auto i = this->color_is_used.begin(); i != this->color_is_used.end(); ++i)
+    {
+        if (*i)
+        {
+            this->val++;
+        }
+    }
 }
 
 State::~State()
 {
-    // Free vector memory
-    this->node_colors.clear();
+    for (auto i = this->vertex_has_color.begin(); i != this->vertex_has_color.end(); ++i)
+        (*i).clear();
+
+    this->vertex_has_color.clear();
+
+    this->color_is_used.clear();
 }
 
 State *State::generateStartingState()
@@ -42,17 +47,11 @@ int State::getValue()
 
 std::string State::getState()
 {
-    // Composed string
-    std::stringstream output;
+    std::string output;
 
-    // Compose string by iterating states
-    for (auto i = this->node_colors.begin(); i != this->node_colors.end(); ++i)
-    {
-        output << "State: " << std::distance(this->node_colors.begin(), i) << std::endl;
-        output << " Color: " << (*i) << std::endl;
-    }
+    // TODO
 
-    return output.str();
+    return output;
 }
 
 State *State::getBest()

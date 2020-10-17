@@ -17,18 +17,20 @@ class State
 private:
     static State *best; // The best state found throughout execution
 
-    int val;                      // Value of the current state
-    std::vector<int> node_colors; // Color given to each node
+    int val;                                         // Value of the current state
+    std::vector<std::vector<bool>> vertex_has_color; // If vertex v has color c (binary)
+    std::vector<bool> color_is_used;                 // If color c is used in the solution
 
 public:
     /**
      * @brief State constructor
-     * @param colors List containing colors for each vertex
+     * @param vertex_has_color_ Matrix containing the colors given to each vertex
+     * @param color_is_used_    Vector containing information if each color was used
      */
-    State(std::vector<int> colors);
+    State(std::vector<std::vector<bool>> vertex_has_color_, std::vector<bool> color_is_used_);
 
     /**
-     * @brief State destructor 
+     * @brief State destructor
      */
     ~State();
 

@@ -1,5 +1,5 @@
 /**
- * This file contains the SimulatedAnnealling class, which implements the algorithm
+ * This file contains the SimulatedAnnealing class, which implements the algorithm
  * of same name using a seed provided during initialization
  * 
  * Author: Fábio de Azevedo Gomes
@@ -21,10 +21,9 @@ class SimulatedAnnealing
 {
 
 private:
-    unsigned long seed; // Seed used for randomization
-    float k;            // Probability divisor constant
-    float r;            // Cooling factor
-    float t;            // Current temperature value
+    float k;           // Probability divisor constant
+    float cooler;      // Cooling factor
+    float temperature; // Current temperature value
 
     int vertex_count;                  // Number of vertexes in the input graph
     int edge_count;                    // Number of edges in the input graph
@@ -61,7 +60,7 @@ private:
     /**
      * @brief Prepares the input data into the correct structures for running the algorithm
      * @param file File containing the input data
-     * @throw std::exception if input data has the wrong format or file does not exist
+     * @throw std::runtime_error if input data has the wrong format or file does not exist
      */
     void prepareData(std::ifstream &file);
 };

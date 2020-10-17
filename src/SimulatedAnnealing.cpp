@@ -6,8 +6,13 @@ SimulatedAnnealing::SimulatedAnnealing(float t_, float k_, float r_, std::string
 
     // Initialize values
     this->k = k_;
-    this->r = r_;
-    this->t = t_;
+    this->temperature = t_;
+
+    // Check cooling factor
+    if (r_ <= 0 || r_ >= 1)
+        throw new std::runtime_error("Cooling factor must be in the interval (0,1)!");
+
+    this->cooler = r_;
 
     // Try to open file
     in_file.open(file, std::ifstream::in);
@@ -23,7 +28,10 @@ SimulatedAnnealing::SimulatedAnnealing(float t_, float k_, float r_, std::string
 
 SimulatedAnnealing::~SimulatedAnnealing()
 {
-    // TODO Free data structures used
+    for (auto i = this->adj.begin(); i != this->adj.end(); ++i)
+        (*i).clear();
+
+    this->adj.clear();
 }
 
 void SimulatedAnnealing::outputInfo()
@@ -102,6 +110,7 @@ void SimulatedAnnealing::prepareData(std::ifstream &file)
             }
         }
     }
+
     // Output information about the instance
     this->outputInfo();
 
@@ -134,13 +143,13 @@ int SimulatedAnnealing::run()
     State *current_state = State::generateStartingState();
 
     // While temperature is not 0 (STOP 2)
-    while (this->t > 0)
+    while (this->temperature > 0)
     {
         // Log
         std::cout << "Starting iteration " << iteration_number << std::endl;
 
         // Calculate new selection probability denominator with new temperature
-        prob_kt = this->k * this->t;
+        prob_kt = this->k * this->temperature;
 
         // Iterate neighbors (STOP 1)
         for (int i = 0; i < maxNeighbors; ++i)
@@ -165,7 +174,7 @@ int SimulatedAnnealing::run()
         }
 
         // Decrease temperature
-        this->t = this->t * this->r;
+        this->temperature = this->temperature * this->cooler;
 
         // Increment iteration
         iteration_number++;

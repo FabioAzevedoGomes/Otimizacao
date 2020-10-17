@@ -6,32 +6,33 @@
 #    * E Is the set of edges
 #
 # - Minimize the number of colors k such that:
-#    * Each vertex v in V has an assigned color
+#    * Each vertex v in V has an assigned color 
+#    * Each vertex v in V has ONLY one color
 #    * No two vertexes u,v in V that share an edge have the same color
 #
 
 # Input parameters
 
-# Set containing every vertex in the input graph, numbered 1 through N
-set V;
+set V; # Set containing every vertex in the input graph, numbered 1 through N
+set C; # Set containing every color possible to be used in the solution, numbered 1 through M
 
 # Adjacency matrix for input graph G
 param graph {V, V};
 
-# Big M
-param M;
+# Variables
+var vertex_has_color {V, C} binary; # If vertex v has color c
+var color_is_used {C} binary;       # If color c is used
 
-# Problem variables
-var color {V} integer, >= 0; # Color given to node v
-var decision {V,V} binary;   # Binary variable for modeling inequality
+# Objective
+minimize Colors:
+    sum{ c in C } color_is_used[c];
 
-# Problem objective
-minimize ColorSum:
-	sum {v in V} color[v];
+# Restrictions
+subject to OneColorLower { v in V }:
+    sum {c in C} vertex_has_color[v, c] <= 1;
 
-# Problem restrictions
-subject to FullColoring {v in vertices}:
-    color[v] > 0;
+subject to OneColorUpper { v in V }:
+    sum {c in C} vertex_has_color[v, c] >= 1;
 
-subject to SameColorConstraintUpper {u, v in vertices}: 
-    color[u] - color[v]*graph[u,v] != 0 # FIXME
+subject to SameColorRestriction { u, v in V , c in C }:
+    (graph[u,v]) * (vertex_has_color[u, c] + vertex_has_color[v, c]) <= 1
