@@ -5,10 +5,17 @@
  * Author: Fábio de Azevedo Gomes
  */
 
+#ifndef SIMMULATED_ANNEALING_H
+#define SIMMULATED_ANNEALING_H
+
 #include <random>
 #include <fstream>
 #include <exception>
 #include <iostream>
+#include <limits>
+#include <cmath>
+
+#include "State.h"
 
 class SimulatedAnnealing
 {
@@ -19,16 +26,19 @@ private:
     float r;            // Cooling factor
     float t;            // Current temperature value
 
+    int vertex_count;                  // Number of vertexes in the input graph
+    int edge_count;                    // Number of edges in the input graph
+    std::vector<std::vector<int>> adj; // Adjacency matrix for the input graph
+
 public:
     /**
      * @brief Class constructor 
-     * @param seed_ Seed for initial value generation
      * @param t_    Initial temperature
      * @param k_    Probability divisor constant
      * @param r_    Cooling factor
      * @param file  File containing the input data
      */
-    SimulatedAnnealing(unsigned long seed_, float t_, float k_, float r_, std::string file);
+    SimulatedAnnealing(float t_, float k_, float r_, std::string file);
 
     /**
      * @brief Class destructor 
@@ -41,6 +51,12 @@ public:
      */
     int run();
 
+    /**
+     * @brief Outputs the problem instance information, such as the
+     * total number of vertices, edges and the adjacency matrix
+     */
+    void outputInfo();
+
 private:
     /**
      * @brief Prepares the input data into the correct structures for running the algorithm
@@ -49,3 +65,5 @@ private:
      */
     void prepareData(std::ifstream &file);
 };
+
+#endif

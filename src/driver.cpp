@@ -5,7 +5,6 @@
  */
 
 #include <iostream>
-#include <limits>
 
 #include "SimulatedAnnealing.h"
 
@@ -13,7 +12,7 @@
 int main(int argc, char **argv)
 {
     // Operation result returned by the simulated annealing arlgorithm
-    int result = std::numeric_limits<int>::max();
+    int result;
     SimulatedAnnealing *sa = NULL;
 
     // Parse command line input
@@ -23,10 +22,13 @@ int main(int argc, char **argv)
         return -1;
     }
 
+    // Set psudo-random seed
+    srand(atol(argv[1]));
+
     try
     {
-        // Create instance
-        sa = new SimulatedAnnealing(atol(argv[1]), atof(argv[2]), atof(argv[3]), atof(argv[4]), argv[5]);
+        // Create instance of simulated annealing
+        sa = new SimulatedAnnealing(atof(argv[2]), atof(argv[3]), atof(argv[4]), argv[5]);
 
         // Run
         result = sa->run();
