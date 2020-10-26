@@ -47,11 +47,27 @@ int State::getValue()
 
 std::string State::getState()
 {
-    std::string output;
+    std::stringstream temp, output;
+    int color_count = 0;
 
-    // TODO
+    output << " = State description = " << std::endl;
 
-    return output;
+    // Traverse each color
+    for (auto i = this->vertex_has_color.begin(); i != this->vertex_has_color.end(); ++i)
+        for (auto j = (*i).begin(); j != (*i).end(); ++j)
+            if (*j)
+                output << " Vertex " << std::distance(this->vertex_has_color.begin(), i) << " has color " << std::distance((*i).begin(), j) << std::endl;
+
+    // Traverse color counter
+    for (auto i = this->color_is_used.begin(); i != this->color_is_used.end(); ++i)
+        if (*i)
+            color_count++;
+
+    // Add information about the color counter
+    output << "Total colors used: " << color_count << std::endl;
+
+    // Return
+    return output.str();
 }
 
 State *State::getBest()

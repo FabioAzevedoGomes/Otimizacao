@@ -111,10 +111,65 @@ void SimulatedAnnealing::prepareData(std::ifstream &file)
         }
     }
 
+    // Prepate GLPK file
+    this->prepareGLPK("../dat/data.dat");
+
     // Output information about the instance
     this->outputInfo();
+}
 
-    std::exit(0);
+void SimulatedAnnealing::prepareGLPK(std::string filename)
+{
+    // File for GLPK-ready output
+    std::ofstream data(filename);
+
+    // Write output file opening statement
+    data << "data;" << std::endl
+         << std::endl;
+
+    // Write vertex set
+    data << "# Vertex set (Numbered 0 through N-1)" << std::endl;
+    data << "set V :=";
+    for (int i = 0; i < this->vertex_count; i++)
+    {
+        data << " " << i;
+    }
+    data << ";" << std::endl
+         << std::endl;
+
+    // Write color set
+    data << "# Color set (Assuming worst case scenario where nColors = nVertexes)" << std::endl;
+    data << "set C :=";
+    for (int i = 0; i < this->vertex_count; i++)
+    {
+        data << " " << i;
+    }
+    data << ";" << std::endl
+         << std::endl;
+
+    // Write adjacency matrix
+    data << "# Graph adjacency matrix" << std::endl;
+    data << "param graph :=" << std::endl;
+    for (int i = 0; i < this->vertex_count; i++)
+    {
+        for (int j = 0; j < this->vertex_count; j++)
+        {
+            data << " [" << i << ", " << j << "] " << this->adj[i][j];
+            if (i < this->vertex_count - 1 || j < this->vertex_count - 1)
+            {
+                data << ",";
+            }
+        }
+        data << std::endl;
+    }
+    data << ";" << std::endl
+         << std::endl;
+
+    // Write output file closing statement
+    data << "end;" << std::endl;
+
+    // Close file
+    data.close();
 }
 
 // ALGORITHM LOGIC
@@ -137,13 +192,14 @@ int SimulatedAnnealing::run()
     double prob_kt = 0;        // Probability that a worse state will be chosen
     uint iteration_number = 1; // Current iteration number
     State *neighbor;           // Generated neighbor for a state
-    int maxNeighbors = 0;      // Number of neighbors generated each iteration
+    int maxNeighbors = 10;     // Number of neighbors generated each iteration
+    double lambda = 0.0001;    // Lower limit for temperature before stopping
 
     // Generate starting state
     State *current_state = State::generateStartingState();
 
     // While temperature is not 0 (STOP 2)
-    while (this->temperature > 0)
+    while (this->temperature > lambda)
     {
         // Log
         std::cout << "Starting iteration " << iteration_number << std::endl;
@@ -181,6 +237,13 @@ int SimulatedAnnealing::run()
 
         // TODO Save traversed states somewhere so they do not get re-visited?
     }
+
+    // Log
+    std::cout << "Finished with " << iteration_number - 1 << " iterations.";
+
+    // Best state
+    std::cout << "Best found state uses " << State::getBest()->getValue() << " colors" << std::endl;
+    std::cout << State::getBest()->getState() << std::endl;
 
     // Return best obtained value throughout the algorithm
     return State::getBest()->getValue();

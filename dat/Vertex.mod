@@ -28,11 +28,11 @@ minimize Colors:
     sum{ c in C } color_is_used[c];
 
 # Restrictions
-subject to OneColorLower { v in V }:
+subject to OneColorLower { v in V }:          # Each node can only have 1 assigned color
     sum {c in C} vertex_has_color[v, c] <= 1;
 
-subject to OneColorUpper { v in V }:
-    sum {c in C} vertex_has_color[v, c] >= 1;
+subject to OneColorUpper { v in V }:          # Each node can only have 1 assigned color
+    sum {c in C} vertex_has_color[v, c] >= 1; 
 
-subject to SameColorRestriction { u, v in V , c in C }:
+subject to SameColorRestriction { u, v in V , c in C }: # No 2 nodes can have the same color
     (graph[u,v]) * (vertex_has_color[u, c] + vertex_has_color[v, c]) <= 1

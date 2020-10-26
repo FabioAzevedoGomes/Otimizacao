@@ -23,7 +23,7 @@ int main(int argc, char **argv)
     }
 
     // Set psudo-random seed
-    srand(atol(argv[1]));
+    srandom(atol(argv[1]));
 
     try
     {
@@ -41,6 +41,8 @@ int main(int argc, char **argv)
         return -1;
     }
 
-    // Finish returning result value
-    return result;
+    std::cout << "Best solution found: " << result << " colors" << std::endl;
+
+    // Finish
+    return 0;
 }

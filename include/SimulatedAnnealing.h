@@ -63,6 +63,13 @@ private:
      * @throw std::runtime_error if input data has the wrong format or file does not exist
      */
     void prepareData(std::ifstream &file);
+
+    /**
+     * @brief Prepares a GLPK formatted param file for use with the
+     * solver, based on the input data 
+     * @param filename Output file name
+     */
+    void prepareGLPK(std::string filename);
 };
 
 #endif
