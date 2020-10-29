@@ -17,6 +17,9 @@
 
 #include "State.h"
 
+// Forward declaration of State
+class State;
+
 class SimulatedAnnealing
 {
 
@@ -55,6 +58,14 @@ public:
      * total number of vertices, edges and the adjacency matrix
      */
     void outputInfo();
+
+    /**
+     * @brief Returns true if vertex v can receive color c, false otherwise
+     * @param v Vertex number
+     * @param c Color number
+     * @param vertex_colors Matrix containing the color given to each vertex so far
+     */
+    bool canUse(int v, int c, std::vector<std::vector<bool>> vertex_colors);
 
 private:
     /**

@@ -24,6 +24,9 @@ SimulatedAnnealing::SimulatedAnnealing(float t_, float k_, float r_, std::string
 
     // Close file
     in_file.close();
+
+    // Upadte state vertex count
+    State::setVertexCount(this->vertex_count);
 }
 
 SimulatedAnnealing::~SimulatedAnnealing()
@@ -49,6 +52,27 @@ void SimulatedAnnealing::outputInfo()
             std::cout << this->adj[i][j] << " ";
         std::cout << std::endl;
     }
+}
+
+bool SimulatedAnnealing::canUse(int v, int c, std::vector<std::vector<bool>> vertex_colors)
+{
+    bool can_use = true;
+
+    // Iterate vertex adjacency matrix
+    for (int j = 0; can_use && j < this->vertex_count; ++j)
+    {
+        // If nodes are connected
+        if (this->adj[v][j] == 1)
+        {
+            // If If the same, return false
+            if (vertex_colors[j][c])
+            {
+                can_use = false;
+            }
+        }
+    }
+
+    return can_use;
 }
 
 void SimulatedAnnealing::prepareData(std::ifstream &file)
@@ -195,8 +219,17 @@ int SimulatedAnnealing::run()
     int maxNeighbors = 10;     // Number of neighbors generated each iteration
     double lambda = 0.0001;    // Lower limit for temperature before stopping
 
+    // DEBUG
+    std::cout << "Generating starting state..." << std::endl;
+
     // Generate starting state
-    State *current_state = State::generateStartingState();
+    State *current_state = State::generateStartingState(this);
+
+    // DEBUG
+    std::cout << "Starting state is " << std::endl
+              << current_state->getState() << std::endl;
+    std::cout << "State correctness is: " << std::endl;
+    std::cout << current_state->checkOK(this) << std::endl;
 
     // While temperature is not 0 (STOP 2)
     while (this->temperature > lambda)
