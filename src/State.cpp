@@ -119,18 +119,63 @@ State *State::generateStartingState(SimulatedAnnealing *instance)
     // Create state with these values
     State *starting_state = new State(vertex_has_color, color_is_used);
 
+    State::best = starting_state;
+    
     // Return created state
     return starting_state;
 }
 
-State *State::generateNeighbor()
+State *State::generateNeighbor(SimulatedAnnealing *instance)
 {
-    // TODO
+    std::vector<std::vector<bool>> new_state_vertex_has_color = this->vertex_has_color;
+    std::vector<bool> new_state_color_is_used = this->color_is_used;
 
-    // Update best
-    State::best = this;
+    // Randomly sample a vertex and color
+    int new_random_vertex = random() % State::vertex_count;
 
-    return this;
+    int old_color;
+
+    for (int color = 0; color < State::vertex_count; color++)
+    {
+        if (new_state_vertex_has_color[new_random_vertex][color])
+        {
+            new_state_vertex_has_color[new_random_vertex][color] = false; // O antigo vértice não tem mais essa cor
+            old_color = color;
+            color = vertex_count; // For leaving the loop
+        } 
+    }
+
+    for (int color = 0; color < State::vertex_count; color++)
+    {
+        if(color != old_color && instance->canUse(new_random_vertex, color, new_state_vertex_has_color))
+        {
+            new_state_vertex_has_color[new_random_vertex][color] = true; // New vertex color
+            color = vertex_count;
+        }
+    }
+
+    bool color_still_used = false;
+
+    for (int vertex = 0; vertex < State::vertex_count; vertex++)
+    {
+        // Indicates if the new state still uses the old color
+        if (new_state_vertex_has_color[vertex][old_color])
+        {
+            color_still_used = true;
+            vertex = State::vertex_count;
+        }        
+    }
+
+    new_state_color_is_used[old_color] = color_still_used;
+
+    State *new_state = new State(new_state_vertex_has_color, new_state_color_is_used);
+
+    if (new_state->getValue() < State::getBest()->getValue())
+    {
+        State::best = new_state;
+    }
+
+    return new_state;
 }
 
 int State::getValue()

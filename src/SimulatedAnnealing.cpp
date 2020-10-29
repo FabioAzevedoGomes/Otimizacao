@@ -241,7 +241,7 @@ int SimulatedAnnealing::run()
         for (int i = 0; i < maxNeighbors; ++i)
         {
             // Generate neighbor
-            neighbor = current_state->generateNeighbor();
+            neighbor = current_state->generateNeighbor(this);
 
             // If neighbor value is better than current value
             if (neighbor->getValue() <= current_state->getValue())

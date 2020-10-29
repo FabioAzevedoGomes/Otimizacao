@@ -19,7 +19,7 @@ class SimulatedAnnealing;
 
 class State
 {
-private:
+public:
     static int vertex_count; // Number of vertices per state (Same as colors in worst case scenario)
     static State *best;      // The best state found throughout execution
 
@@ -49,8 +49,9 @@ public:
     /**
      * @brief Generates a neighbor for this state. If neighbor value
      * is better than 'best', update best to generated
+     * @param instance Problem instance
      */
-    State *generateNeighbor();
+    State *generateNeighbor(SimulatedAnnealing *instance);
 
     // GETTERS
 
