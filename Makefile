@@ -17,5 +17,8 @@ dirs:
 	mkdir -p ${OBJ}
 	mkdir -p ${BIN}
 
+test:
+	cd bin && valgrind ./app 1 10 1 0.5 "../dat/CG/2-FullIns_4.col"
+
 clean:
-	rm ${OBJ}*.o ${BIN}app
+	rm ${OBJ}*.o ${BIN}app log.txt dat/data.dat

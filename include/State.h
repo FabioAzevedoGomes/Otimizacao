@@ -5,17 +5,23 @@
  * Author: Fábio de Azevedo Gomes
  */
 
-#include <list>
 #include <vector>
 #include <sstream>
+#include <iostream>
 
 #ifndef STATE_H
 #define STATE_H
 
+#include "SimulatedAnnealing.h"
+
+// Forward declaration of SimulatedAnnealing
+class SimulatedAnnealing;
+
 class State
 {
 private:
-    static State *best; // The best state found throughout execution
+    static int vertex_count; // Number of vertices per state (Same as colors in worst case scenario)
+    static State *best;      // The best state found throughout execution
 
     int val;                                         // Value of the current state
     std::vector<std::vector<bool>> vertex_has_color; // If vertex v has color c (binary)
@@ -36,8 +42,9 @@ public:
 
     /**
      * @brief Generates a random starting state based on the given seed 
+     * @param instance Problem instance
      */
-    static State *generateStartingState();
+    static State *generateStartingState(SimulatedAnnealing *instance);
 
     /**
      * @brief Generates a neighbor for this state. If neighbor value
@@ -62,6 +69,18 @@ public:
      * @brief Returns the best neighbor 
      */
     static State *getBest();
+
+    /**
+     * @brief Sets the state vertex count for the problem
+     * @param count Vertex count
+     */
+    static void setVertexCount(int count);
+
+    /**
+     * @brief Checks if this state is OK with the restrictions
+     * @returns True if OK, false otherwise 
+     */
+    bool checkOK(SimulatedAnnealing *instance);
 };
 
 #endif

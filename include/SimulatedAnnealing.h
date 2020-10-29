@@ -17,6 +17,9 @@
 
 #include "State.h"
 
+// Forward declaration of State
+class State;
+
 class SimulatedAnnealing
 {
 
@@ -56,6 +59,14 @@ public:
      */
     void outputInfo();
 
+    /**
+     * @brief Returns true if vertex v can receive color c, false otherwise
+     * @param v Vertex number
+     * @param c Color number
+     * @param vertex_colors Matrix containing the color given to each vertex so far
+     */
+    bool canUse(int v, int c, std::vector<std::vector<bool>> vertex_colors);
+
 private:
     /**
      * @brief Prepares the input data into the correct structures for running the algorithm
@@ -63,6 +74,13 @@ private:
      * @throw std::runtime_error if input data has the wrong format or file does not exist
      */
     void prepareData(std::ifstream &file);
+
+    /**
+     * @brief Prepares a GLPK formatted param file for use with the
+     * solver, based on the input data 
+     * @param filename Output file name
+     */
+    void prepareGLPK(std::string filename);
 };
 
 #endif

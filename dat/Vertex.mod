@@ -19,6 +19,9 @@ set C; # Set containing every color possible to be used in the solution, numbere
 # Adjacency matrix for input graph G
 param graph {V, V};
 
+# Big M
+param M;
+
 # Variables
 var vertex_has_color {V, C} binary; # If vertex v has color c
 var color_is_used {C} binary;       # If color c is used
@@ -28,11 +31,14 @@ minimize Colors:
     sum{ c in C } color_is_used[c];
 
 # Restrictions
-subject to OneColorLower { v in V }:
+subject to OneColorLower { v in V }:          # Each node can only have 1 assigned color
     sum {c in C} vertex_has_color[v, c] <= 1;
 
-subject to OneColorUpper { v in V }:
-    sum {c in C} vertex_has_color[v, c] >= 1;
+subject to OneColorUpper { v in V }:          # Each node can only have 1 assigned color
+    sum {c in C} vertex_has_color[v, c] >= 1; 
 
-subject to SameColorRestriction { u, v in V , c in C }:
+subject to SameColorRestriction { u, v in V , c in C }: # No 2 nodes can have the same color
     (graph[u,v]) * (vertex_has_color[u, c] + vertex_has_color[v, c]) <= 1
+    
+subject to MustChooseColor { c in C }: # Can only use color c if marked as used
+    sum {v in V} vertex_has_color[v, c] <= color_is_used[c] * M
