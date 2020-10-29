@@ -27,30 +27,31 @@ State::~State()
     this->color_is_used.clear();
 }
 
-/**
- * Pseudo-Algorithm for generating starting state:
- * 
- *     // First we take a random starting vertex from all possible ones and color it
- *  1. vertex_list = list (vertex_count) // 0 to N-1
- *  2. color_list = list (vertex_count)  // 0 to N-1
- *  3. Vs = sample (vertex_list);
- *  4. Cs = sample (color_list);
- *  5. vertex_has_color(Vs, Cs) = true
- *  6. vertex_list->remove(Vs)
- * 
- *     // Now that we have a vertex with a color, we can start filling the rest accordingly
- *  7. for (i = 0 i < vertex_count ; i++)
- *  8.   Vi = sample (vertex_list);
- *  9.   vertex_list->remove(Vi)
- * 10.   for (j = 0; j < vertex_count; j++)
- * 11.      if ( Vi->canUse(j) )
- * 12.        vertex_has_color (Vi, j) = true
- * 13.      endif
- * 14.   endfor
- * 15. endfor
- */
 State *State::generateStartingState(SimulatedAnnealing *instance)
 {
+    /**
+     * Pseudo-Algorithm for generating starting state:
+     * 
+     *     // First we take a random starting vertex from all possible ones and color it
+     *  1. vertex_list = list (vertex_count) // 0 to N-1
+     *  2. color_list = list (vertex_count)  // 0 to N-1
+     *  3. Vs = sample (vertex_list);
+     *  4. Cs = sample (color_list);
+     *  5. vertex_has_color(Vs, Cs) = true
+     *  6. vertex_list->remove(Vs)
+     * 
+     *     // Now that we have a vertex with a color, we can start filling the rest accordingly
+     *  7. for (i = 0 i < vertex_count ; i++)
+     *  8.   Vi = sample (vertex_list);
+     *  9.   vertex_list->remove(Vi)
+     * 10.   for (j = 0; j < vertex_count; j++)
+     * 11.      if ( Vi->canUse(j) )
+     * 12.        vertex_has_color (Vi, j) = true
+     * 13.      endif
+     * 14.   endfor
+     * 15. endfor
+     */
+
     // Vertex coloring matrix and color usage vector
     std::vector<std::vector<bool>> vertex_has_color;
     std::vector<bool> color_is_used(State::vertex_count);

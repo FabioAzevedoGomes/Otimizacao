@@ -198,21 +198,22 @@ void SimulatedAnnealing::prepareGLPK(std::string filename)
 
 // ALGORITHM LOGIC
 
-/**
- * Pseudo-Algorithm:
- *
- * 1. while STOP 2
- * 2.   while STOP 1
- * 3.    Choose s' not visited from N(s)
- * 4.     if f(s') < f(s)
- * 5.       s = s'
- * 6.     else 
- * 7.       s = s' with probability e ^ - (f(s') - f(s)) / k * t
- * 8.    t = t * r
- * 9. return s
- */
 int SimulatedAnnealing::run()
 {
+    /**
+     * Pseudo-Algorithm:
+     *
+     * 1. while STOP 2
+     * 2.   while STOP 1
+     * 3.    Choose s' not visited from N(s)
+     * 4.     if f(s') < f(s)
+     * 5.       s = s'
+     * 6.     else 
+     * 7.       s = s' with probability e ^ - (f(s') - f(s)) / k * t
+     * 8.    t = t * r
+     * 9. return s
+     */
+
     double prob_kt = 0;        // Probability that a worse state will be chosen
     uint iteration_number = 1; // Current iteration number
     State *neighbor;           // Generated neighbor for a state
@@ -220,16 +221,12 @@ int SimulatedAnnealing::run()
     double lambda = 0.0001;    // Lower limit for temperature before stopping
 
     // DEBUG
-    std::cout << "Generating starting state..." << std::endl;
+    std::cout << "Generating starting state...";
 
     // Generate starting state
     State *current_state = State::generateStartingState(this);
 
-    // DEBUG
-    std::cout << "Starting state is " << std::endl
-              << current_state->getState() << std::endl;
-    std::cout << "State correctness is: " << std::endl;
-    std::cout << current_state->checkOK(this) << std::endl;
+    std::cout << " Done." << std::endl;
 
     // While temperature is not 0 (STOP 2)
     while (this->temperature > lambda)
