@@ -5,6 +5,12 @@
  * Author: Fábio de Azevedo Gomes
  */
 
+#ifdef DEBUG
+#define DEBUG_LOG(x) (x)
+#else
+#define DEBUG_LOG(x)
+#endif 
+
 #ifndef SIMMULATED_ANNEALING_H
 #define SIMMULATED_ANNEALING_H
 
@@ -14,8 +20,12 @@
 #include <iostream>
 #include <limits>
 #include <cmath>
+#include <ctime>
+#include <chrono>
 
 #include "State.h"
+#include "Vertex.h"
+#include "Color.h"
 
 // Forward declaration of State
 class State;
@@ -31,6 +41,8 @@ private:
     int vertex_count;                  // Number of vertexes in the input graph
     int edge_count;                    // Number of edges in the input graph
     std::vector<std::vector<int>> adj; // Adjacency matrix for the input graph
+
+    std::vector<Vertex *> vertexes; // Instance vertexes
 
 public:
     /**

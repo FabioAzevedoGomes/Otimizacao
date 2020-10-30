@@ -31,10 +31,15 @@ SimulatedAnnealing::SimulatedAnnealing(float t_, float k_, float r_, std::string
 
 SimulatedAnnealing::~SimulatedAnnealing()
 {
+    // Delete adjacency matrix
     for (auto i = this->adj.begin(); i != this->adj.end(); ++i)
         (*i).clear();
 
     this->adj.clear();
+
+    // delete vertexes
+    for (int i = 0; i < this->vertex_count; ++i)
+        delete this->vertexes[i];
 }
 
 void SimulatedAnnealing::outputInfo()
@@ -58,17 +63,14 @@ bool SimulatedAnnealing::canUse(int v, int c, std::vector<std::vector<bool>> ver
 {
     bool can_use = true;
 
-    // Iterate vertex adjacency matrix
-    for (int j = 0; can_use && j < this->vertex_count; ++j)
+    Vertex *vertex = this->vertexes[v];
+    std::vector<Vertex *> adjacent_to = vertex->getAdjacency();
+
+    for (auto i = adjacent_to.begin(); can_use && i != adjacent_to.end(); ++i)
     {
-        // If nodes are connected
-        if (this->adj[v][j] == 1)
+        if (vertex_colors[(*i)->getLabel()][c])
         {
-            // If If the same, return false
-            if (vertex_colors[j][c])
-            {
-                can_use = false;
-            }
+            can_use = false;
         }
     }
 
@@ -81,6 +83,8 @@ void SimulatedAnnealing::prepareData(std::ifstream &file)
     std::string token; // Token read from line
 
     int first, second; // Nodes that are part of an edge
+
+    Vertex *vertex = NULL;
 
     while (std::getline(file, line))
     {
@@ -104,10 +108,17 @@ void SimulatedAnnealing::prepareData(std::ifstream &file)
                 getline(linestream, token, ' ');
                 this->vertex_count = atoi(token.c_str());
 
-                // Set adjacency matrix size
+                // Set adjacency matrix size and create vertexes
                 this->adj.resize(this->vertex_count);
                 for (int i = 0; i < this->vertex_count; ++i)
+                {
+                    // Resize adjacency matrix
                     this->adj[i].resize(this->vertex_count);
+
+                    // Create vertex and add to list
+                    vertex = new Vertex();
+                    vertexes.push_back(vertex);
+                }
 
                 // Get edge count
                 getline(linestream, token, ' ');
@@ -127,6 +138,10 @@ void SimulatedAnnealing::prepareData(std::ifstream &file)
                 // Update adjacency matrix
                 adj[first - 1][second - 1] = 1;
                 adj[second - 1][first - 1] = 1;
+
+                // Update vertexes
+                this->vertexes[first - 1]->addAdjacent(this->vertexes[second - 1]);
+                this->vertexes[second - 1]->addAdjacent(this->vertexes[first - 1]);
 
                 break;
             default: // Do nothing
@@ -229,13 +244,16 @@ int SimulatedAnnealing::run()
 
     std::ofstream log_file("log.txt"); // For logging state progression
 
-    // DEBUG
+    DEBUG_LOG(outputInfo());
+
     std::cout << "Generating starting state..." << std::endl;
+
+    // Start measuring time
+    auto start = std::chrono::system_clock::now();
 
     // Generate starting state
     State *current_state = State::generateStartingState(this);
 
-    // DEBUG
     std::cout << "Done." << std::endl;
 
     // While temperature is not 0 (STOP 2)
@@ -258,8 +276,7 @@ int SimulatedAnnealing::run()
             // If neighbor value is better than current value
             if (neighbor->getValue() <= current_state->getValue())
             {
-                // DEBUG
-                //std::cout << "Updated current state to neighbor" << std::endl;
+                DEBUG_LOG(std::cout << "Updated current state to neighbor" << std::endl);
 
                 // Update current state
                 delete current_state;
@@ -270,8 +287,7 @@ int SimulatedAnnealing::run()
                 // With 1.0e-((f(s') - f(s))/k*t) probability
                 if (random() / RAND_MAX < std::exp(-(abs(neighbor->getValue() - current_state->getValue())) / prob_kt))
                 {
-                    // DEBUG
-                    //std::cout << "Updated current state to neighbor even though it had worse value" << std::endl;
+                    DEBUG_LOG(std::cout << "Updated current state to neighbor even though it had worse value" << std::endl);
 
                     // Assign worse state anyways
                     delete current_state;
@@ -290,12 +306,15 @@ int SimulatedAnnealing::run()
 
         // Increment iteration
         iteration_number++;
-
-        // TODO Save traversed states somewhere so they do not get re-visited?
     }
 
+    // Stop timer
+    auto end = std::chrono::system_clock::now();
+    std::chrono::duration<double> elapsed_seconds = end - start;
+
     // Log
-    std::cout << "Finished with " << iteration_number - 1 << " iterations." << std::endl;
+    std::cout << "Finished in " << elapsed_seconds.count() << " seconds" << std::endl
+              << "Total iterations: " << iteration_number - 1 << std::endl;
 
     // Check if final state is OK
     State::getBest()->checkOK(this);

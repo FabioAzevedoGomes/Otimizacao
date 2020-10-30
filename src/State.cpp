@@ -131,7 +131,7 @@ State *State::generateNeighbor(SimulatedAnnealing *instance)
     std::vector<int> new_state_color_is_used = this->color_is_used;
 
     int old_color = -1;            // Color previously used by the selected vertex
-
+    
     // Flags for signaling if old and new colors are found
     bool found_old = false;
     bool found_new = false;
