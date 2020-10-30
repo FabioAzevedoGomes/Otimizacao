@@ -67,6 +67,11 @@ public:
      */
     bool canUse(int v, int c, std::vector<std::vector<bool>> vertex_colors);
 
+    /**
+     * @brief Returns adjacency matrix size (square matrix) 
+     */
+    int getSize();
+
 private:
     /**
      * @brief Prepares the input data into the correct structures for running the algorithm

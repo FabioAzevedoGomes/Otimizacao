@@ -137,9 +137,6 @@ void SimulatedAnnealing::prepareData(std::ifstream &file)
 
     // Prepate GLPK file
     this->prepareGLPK("../dat/data.dat");
-
-    // Output information about the instance
-    this->outputInfo();
 }
 
 void SimulatedAnnealing::prepareGLPK(std::string filename)
@@ -196,6 +193,11 @@ void SimulatedAnnealing::prepareGLPK(std::string filename)
     data.close();
 }
 
+int SimulatedAnnealing::getSize()
+{
+    return this->vertex_count;
+}
+
 // ALGORITHM LOGIC
 
 int SimulatedAnnealing::run()
@@ -216,23 +218,28 @@ int SimulatedAnnealing::run()
 
     double prob_kt = 0;        // Probability that a worse state will be chosen
     uint iteration_number = 1; // Current iteration number
-    State *neighbor;           // Generated neighbor for a state
+    State *neighbor = NULL;    // Generated neighbor for a state
     int maxNeighbors = 10;     // Number of neighbors generated each iteration
     double lambda = 0.0001;    // Lower limit for temperature before stopping
 
+    std::ofstream log_file("log.txt"); // For logging state progression
+
     // DEBUG
-    std::cout << "Generating starting state...";
+    std::cout << "Generating starting state..." << std::endl;
 
     // Generate starting state
     State *current_state = State::generateStartingState(this);
 
-    std::cout << " Done." << std::endl;
+    // DEBUG
+    std::cout << "Done." << std::endl;
 
     // While temperature is not 0 (STOP 2)
     while (this->temperature > lambda)
     {
         // Log
         std::cout << "Starting iteration " << iteration_number << std::endl;
+        log_file << "Iteration: " << iteration_number << std::endl
+                 << "Current state value: " << current_state->getValue() << std::endl;
 
         // Calculate new selection probability denominator with new temperature
         prob_kt = this->k * this->temperature;
@@ -246,15 +253,29 @@ int SimulatedAnnealing::run()
             // If neighbor value is better than current value
             if (neighbor->getValue() <= current_state->getValue())
             {
-                current_state = neighbor; // Update current state
+                // DEBUG
+                //std::cout << "Updated current state to neighbor" << std::endl;
+
+                // Update current state
+                delete current_state;
+                current_state = neighbor;
             }
             else
             {
                 // With 1.0e-((f(s') - f(s))/k*t) probability
                 if (random() / RAND_MAX < std::exp(-(neighbor->getValue() - current_state->getValue()) / prob_kt))
                 {
+                    // DEBUG
+                    //std::cout << "Updated current state to neighbor even though it had worse value" << std::endl;
+
                     // Assign worse state anyways
+                    delete current_state;
                     current_state = neighbor;
+                }
+                else
+                {
+                    // If neighbor was ignored, delete it
+                    delete neighbor;
                 }
             }
         }
@@ -269,12 +290,20 @@ int SimulatedAnnealing::run()
     }
 
     // Log
-    std::cout << "Finished with " << iteration_number - 1 << " iterations.";
+    std::cout << "Finished with " << iteration_number - 1 << " iterations." << std::endl;
 
     // Best state
-    std::cout << "Best found state uses " << State::getBest()->getValue() << " colors" << std::endl;
+    int best_state_value = State::getBest()->getValue();
+    std::cout << "Best found state uses " << best_state_value << " colors" << std::endl;
     std::cout << State::getBest()->getState() << std::endl;
 
-    // Return best obtained value throughout the algorithm
-    return State::getBest()->getValue();
+    // Free memory
+    delete current_state;
+    State::deleteBest();
+
+    // Close log file
+    log_file.close();
+
+    // Return best state's value
+    return best_state_value;
 }

@@ -7,6 +7,7 @@ State::State(std::vector<std::vector<bool>> vertex_has_color_, std::vector<bool>
 {
     this->vertex_has_color = vertex_has_color_;
     this->color_is_used = color_is_used_;
+    this->val = 0;
 
     for (auto i = this->color_is_used.begin(); i != this->color_is_used.end(); ++i)
     {
@@ -51,6 +52,9 @@ State *State::generateStartingState(SimulatedAnnealing *instance)
      * 14.   endfor
      * 15. endfor
      */
+
+    // Update vertex count
+    State::setVertexCount(instance->getSize());
 
     // Vertex coloring matrix and color usage vector
     std::vector<std::vector<bool>> vertex_has_color;
@@ -119,8 +123,12 @@ State *State::generateStartingState(SimulatedAnnealing *instance)
     // Create state with these values
     State *starting_state = new State(vertex_has_color, color_is_used);
 
-    State::best = starting_state;
-    
+    // Update best
+    State::best = new State(*starting_state);
+
+    vertexes.clear();
+    colors.clear();
+
     // Return created state
     return starting_state;
 }
@@ -130,51 +138,69 @@ State *State::generateNeighbor(SimulatedAnnealing *instance)
     std::vector<std::vector<bool>> new_state_vertex_has_color = this->vertex_has_color;
     std::vector<bool> new_state_color_is_used = this->color_is_used;
 
-    // Randomly sample a vertex and color
+    int old_color = -1;            // Color previously used by the selected vertex
+    bool color_still_used = false; // If the color is still used, even after the change
+
+    // Flags for signaling if old and new colors are found
+    bool found_old = false;
+    bool found_new = false;
+
+    // Take a random vertex
     int new_random_vertex = random() % State::vertex_count;
 
-    int old_color;
-
-    for (int color = 0; color < State::vertex_count; color++)
+    // Iterate selectet vertex colors until old and new colors are found
+    for (int color = 0; color < State::vertex_count && (!found_old || !found_new); color++)
     {
+        // If found vertex's old color
         if (new_state_vertex_has_color[new_random_vertex][color])
         {
-            new_state_vertex_has_color[new_random_vertex][color] = false; // O antigo vértice não tem mais essa cor
+            // Save old color
             old_color = color;
-            color = vertex_count; // For leaving the loop
-        } 
-    }
 
-    for (int color = 0; color < State::vertex_count; color++)
-    {
-        if(color != old_color && instance->canUse(new_random_vertex, color, new_state_vertex_has_color))
+            // Set old vertex as not having this color
+            new_state_vertex_has_color[new_random_vertex][color] = false;
+
+            // Mark old color as found
+            found_old = true;
+        }
+        // If not, but vertex can use that color
+        else if (color != old_color && instance->canUse(new_random_vertex, color, new_state_vertex_has_color))
         {
-            new_state_vertex_has_color[new_random_vertex][color] = true; // New vertex color
-            color = vertex_count;
+            // Give new color to vertex
+            new_state_vertex_has_color[new_random_vertex][color] = true;
+
+            // Mark new color as found
+            found_new = true;
         }
     }
 
-    bool color_still_used = false;
-
+    // Iterate old color's usage
     for (int vertex = 0; vertex < State::vertex_count; vertex++)
     {
-        // Indicates if the new state still uses the old color
+        // If color is still used
         if (new_state_vertex_has_color[vertex][old_color])
         {
+            // Mark true and exit
             color_still_used = true;
             vertex = State::vertex_count;
-        }        
+        }
     }
 
+    // Set color usage
     new_state_color_is_used[old_color] = color_still_used;
 
+    // Create the new state
     State *new_state = new State(new_state_vertex_has_color, new_state_color_is_used);
 
+    // If new state is better than best
     if (new_state->getValue() < State::getBest()->getValue())
     {
-        State::best = new_state;
+        // Update best
+        delete best;
+        State::best = new State(*new_state);
     }
 
+    // Return generated state
     return new_state;
 }
 
@@ -211,6 +237,11 @@ std::string State::getState()
 State *State::getBest()
 {
     return State::best;
+}
+
+void State::deleteBest()
+{
+    delete State::best;
 }
 
 void State::setVertexCount(int count)

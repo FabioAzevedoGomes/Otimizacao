@@ -32,6 +32,9 @@ int main(int argc, char **argv)
 
         // Run
         result = sa->run();
+
+        // Free memory
+        delete sa;
     }
     catch (std::runtime_error &e)
     {

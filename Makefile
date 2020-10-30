@@ -18,7 +18,7 @@ dirs:
 	mkdir -p ${BIN}
 
 test:
-	cd bin && valgrind ./app 1 10 1 0.5 "../dat/CG/2-FullIns_4.col"
+	cd bin && valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes ./app 1 10 1 0.5 "../dat/CG/2-FullIns_4.col"
 
 clean:
-	rm ${OBJ}*.o ${BIN}app log.txt dat/data.dat
+	rm ${OBJ}*.o ${BIN}app ${BIN}log.txt dat/data.dat

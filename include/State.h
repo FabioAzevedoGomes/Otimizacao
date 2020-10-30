@@ -72,6 +72,11 @@ public:
     static State *getBest();
 
     /**
+     * @brief Deletes the best neighbor 
+     */
+    static void deleteBest();
+
+    /**
      * @brief Sets the state vertex count for the problem
      * @param count Vertex count
      */
