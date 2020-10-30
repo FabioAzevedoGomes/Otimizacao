@@ -198,6 +198,11 @@ int SimulatedAnnealing::getSize()
     return this->vertex_count;
 }
 
+std::vector<std::vector<int>> SimulatedAnnealing::getAdjacencyMatrix()
+{
+    return this->adj;
+}
+
 // ALGORITHM LOGIC
 
 int SimulatedAnnealing::run()
@@ -263,7 +268,7 @@ int SimulatedAnnealing::run()
             else
             {
                 // With 1.0e-((f(s') - f(s))/k*t) probability
-                if (random() / RAND_MAX < std::exp(-(neighbor->getValue() - current_state->getValue()) / prob_kt))
+                if (random() / RAND_MAX < std::exp(-(abs(neighbor->getValue() - current_state->getValue())) / prob_kt))
                 {
                     // DEBUG
                     //std::cout << "Updated current state to neighbor even though it had worse value" << std::endl;
@@ -291,6 +296,9 @@ int SimulatedAnnealing::run()
 
     // Log
     std::cout << "Finished with " << iteration_number - 1 << " iterations." << std::endl;
+
+    // Check if final state is OK
+    State::getBest()->checkOK(this);
 
     // Best state
     int best_state_value = State::getBest()->getValue();

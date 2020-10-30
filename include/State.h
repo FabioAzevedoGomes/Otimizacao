@@ -25,7 +25,7 @@ public:
 
     int val;                                         // Value of the current state
     std::vector<std::vector<bool>> vertex_has_color; // If vertex v has color c (binary)
-    std::vector<bool> color_is_used;                 // If color c is used in the solution
+    std::vector<int> color_is_used;                  // If color c is used in the solution
 
 public:
     /**
@@ -33,7 +33,7 @@ public:
      * @param vertex_has_color_ Matrix containing the colors given to each vertex
      * @param color_is_used_    Vector containing information if each color was used
      */
-    State(std::vector<std::vector<bool>> vertex_has_color_, std::vector<bool> color_is_used_);
+    State(std::vector<std::vector<bool>> vertex_has_color_, std::vector<int> color_is_used_);
 
     /**
      * @brief State destructor

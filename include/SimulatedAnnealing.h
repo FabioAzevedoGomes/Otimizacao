@@ -72,6 +72,11 @@ public:
      */
     int getSize();
 
+    /**
+     * @brief Returns the graph adjacency matrix 
+     */
+    std::vector<std::vector<int>> getAdjacencyMatrix();
+
 private:
     /**
      * @brief Prepares the input data into the correct structures for running the algorithm

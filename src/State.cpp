@@ -3,7 +3,7 @@
 State *State::best;
 int State::vertex_count;
 
-State::State(std::vector<std::vector<bool>> vertex_has_color_, std::vector<bool> color_is_used_)
+State::State(std::vector<std::vector<bool>> vertex_has_color_, std::vector<int> color_is_used_)
 {
     this->vertex_has_color = vertex_has_color_;
     this->color_is_used = color_is_used_;
@@ -11,7 +11,7 @@ State::State(std::vector<std::vector<bool>> vertex_has_color_, std::vector<bool>
 
     for (auto i = this->color_is_used.begin(); i != this->color_is_used.end(); ++i)
     {
-        if (*i)
+        if (*i > 0)
         {
             this->val++;
         }
@@ -58,15 +58,13 @@ State *State::generateStartingState(SimulatedAnnealing *instance)
 
     // Vertex coloring matrix and color usage vector
     std::vector<std::vector<bool>> vertex_has_color;
-    std::vector<bool> color_is_used(State::vertex_count);
+    std::vector<int> color_is_used(State::vertex_count);
 
     // Sets with every vertex and color
     std::vector<int> vertexes;
-    std::vector<int> colors;
 
     // Current vertex and color index
     int v_i = -1;
-    int c_i = -1;
 
     // Initialize vertex coloring matrix
     vertex_has_color.resize(State::vertex_count);
@@ -77,19 +75,14 @@ State *State::generateStartingState(SimulatedAnnealing *instance)
     for (int i = 0; i < vertex_count; ++i)
         vertexes.insert(vertexes.end(), i);
 
-    // Create a set with every color (0 .. N-1)
-    for (int i = 0; i < vertex_count; ++i)
-        colors.insert(colors.end(), i);
-
     // Randomly sample a vertex and color
     v_i = random() % vertexes.size();
-    c_i = random() % colors.size();
 
     // Assign color to vertex
-    vertex_has_color[vertexes[v_i]][colors[c_i]] = true;
+    vertex_has_color[vertexes[v_i]][0] = true;
 
     // Set color as used
-    color_is_used[colors[c_i]] = true;
+    color_is_used[0]++;
 
     // Remove vertex from set
     vertexes.erase(vertexes.begin() + v_i);
@@ -108,8 +101,8 @@ State *State::generateStartingState(SimulatedAnnealing *instance)
                 // Give color to vertex
                 vertex_has_color[vertexes[v_i]][j] = true;
 
-                // Mark color as used
-                color_is_used[j] = true;
+                // Increase use count
+                color_is_used[j]++;
 
                 // Exit color looping
                 j = vertex_count;
@@ -127,7 +120,6 @@ State *State::generateStartingState(SimulatedAnnealing *instance)
     State::best = new State(*starting_state);
 
     vertexes.clear();
-    colors.clear();
 
     // Return created state
     return starting_state;
@@ -136,10 +128,9 @@ State *State::generateStartingState(SimulatedAnnealing *instance)
 State *State::generateNeighbor(SimulatedAnnealing *instance)
 {
     std::vector<std::vector<bool>> new_state_vertex_has_color = this->vertex_has_color;
-    std::vector<bool> new_state_color_is_used = this->color_is_used;
+    std::vector<int> new_state_color_is_used = this->color_is_used;
 
     int old_color = -1;            // Color previously used by the selected vertex
-    bool color_still_used = false; // If the color is still used, even after the change
 
     // Flags for signaling if old and new colors are found
     bool found_old = false;
@@ -160,6 +151,9 @@ State *State::generateNeighbor(SimulatedAnnealing *instance)
             // Set old vertex as not having this color
             new_state_vertex_has_color[new_random_vertex][color] = false;
 
+            // Decrement color usage
+            new_state_color_is_used[color]--;
+
             // Mark old color as found
             found_old = true;
         }
@@ -169,25 +163,13 @@ State *State::generateNeighbor(SimulatedAnnealing *instance)
             // Give new color to vertex
             new_state_vertex_has_color[new_random_vertex][color] = true;
 
+            // Increment color usage
+            new_state_color_is_used[color]++;
+
             // Mark new color as found
             found_new = true;
         }
     }
-
-    // Iterate old color's usage
-    for (int vertex = 0; vertex < State::vertex_count; vertex++)
-    {
-        // If color is still used
-        if (new_state_vertex_has_color[vertex][old_color])
-        {
-            // Mark true and exit
-            color_still_used = true;
-            vertex = State::vertex_count;
-        }
-    }
-
-    // Set color usage
-    new_state_color_is_used[old_color] = color_still_used;
 
     // Create the new state
     State *new_state = new State(new_state_vertex_has_color, new_state_color_is_used);
