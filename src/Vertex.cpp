@@ -1,54 +1,53 @@
 #include "Vertex.h"
 
-int Vertex::vertex_count = 0;
-
-Vertex::Vertex()
+Vertex::Vertex(unsigned int vertex_id, unsigned int color_id)
 {
-    this->label = Vertex::vertex_count;
-
-    Vertex::vertex_count++;
+    this->id = vertex_id;
+    this->color = color_id;
 }
 
 Vertex::~Vertex()
 {
-    //nil
+    // nil
 }
 
-// Getters
+std::vector<unsigned int> Vertex::getAdjacent()
+{
+    return this->adjacency_list;
+}
 
-Color *Vertex::getColor()
+void Vertex::setAdjacent(unsigned int vertex_id)
+{
+    this->adjacency_list.push_back(vertex_id);
+}
+
+void Vertex::setId(unsigned int vertex_id)
+{
+    this->id = vertex_id;
+}
+
+void Vertex::setColor(unsigned int color_id)
+{
+    this->color = color_id;
+}
+
+unsigned int Vertex::getColor()
 {
     return this->color;
 }
 
-int Vertex::getLabel()
+unsigned int Vertex::getId()
 {
-    return this->label;
+    return this->id;
 }
 
-std::vector<Vertex *> Vertex::getAdjacency()
+bool Vertex::isAdjacentTo(unsigned int vertex_id)
 {
-    return this->adjacent_to;
-}
+    bool is_adjancent = false;
 
-// Setters
-void Vertex::setColor(Color *color)
-{
-    if (this->canUse(color))
-        this->color = color;
-}
+    for (unsigned int i = 0; !is_adjancent && i < this->adjacency_list.size(); ++i)
+        if (this->adjacency_list[i] == vertex_id)
+            is_adjancent = true;
 
-void Vertex::addAdjacent(Vertex *vertex)
-{
-    this->adjacent_to.push_back(vertex);
-}
-
-// Checkers
-bool Vertex::canUse(Color *color)
-{
-    for (auto i = this->adjacent_to.begin(); i != this->adjacent_to.end(); ++i)
-        if (color->getLabel() == (*i)->getColor()->getLabel())
-            return false;
-
-    return true;
+    return is_adjancent;
 }

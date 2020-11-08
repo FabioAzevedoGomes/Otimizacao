@@ -1,44 +1,67 @@
-/**
- * This file models a color or label from the MVC problem, with the 
- * objective of speeding up the adjacency check of vertexes 
- * 
- * Author: Fábio de Azevedo Gomes
- */
-#include <vector>
-
 #ifndef COLOR_H
 #define COLOR_H
 
+#include <vector>
+
 #include "Vertex.h"
 
-// Forward declaration of vertex
 class Vertex;
 
 class Color
 {
 private:
-    static int color_count; // Total number of colors generated
+    // Unique identifier given to this color
+    unsigned int id;
 
-    int label;                      // Color label
-    std::vector<Vertex *> vertexes; // List of vertexes that have this color
+    // Set of vertexes that use this color
+    std::vector<unsigned int> used_by;
 
 public:
     /**
-     * @brief Color constructor
+     * @brief Color constructor 
      */
-    Color();
+    Color(unsigned int color_id = 0);
 
     /**
      * @brief Color destructor 
      */
     ~Color();
 
-    // Getters
-    int getLabel();
-    bool isUsed();
+    // GETTERS
 
-    // Setters
-    void setUser(Vertex *vertex);
+    /**
+     * @brief Returns this color's unique identifier
+     */
+    unsigned int getId();
+
+    /**
+     * @brief Returns this color's list of users 
+     */
+    std::vector<unsigned int> getUsers();
+
+    /**
+     * @brief Returns the amount of vertexes that
+     * use this color 
+     */
+    unsigned int getUsageCounter();
+
+    // SETTERS
+
+    /**
+     * @brief Sets this color's unique identifier 
+     * @param color_id Color id
+     */
+    void setId(unsigned int color_id);
+
+    /**
+     * @brief Adds a new vertex as using this color
+     */
+    void addUser(unsigned int vertex_id);
+
+    /**
+     * @brief Removes a vertex as using this color
+     */
+    void removeUser(unsigned int vertex);
 };
 
-#endif
+#endif // COLOR_H

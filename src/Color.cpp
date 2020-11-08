@@ -1,12 +1,8 @@
 #include "Color.h"
 
-int Color::color_count = 0;
-
-Color::Color()
+Color::Color(unsigned int color_id)
 {
-    this->label = Color::color_count;
-
-    Color::color_count++;
+    this->id = color_id;
 }
 
 Color::~Color()
@@ -14,17 +10,39 @@ Color::~Color()
     // nil
 }
 
-int Color::getLabel()
+unsigned int Color::getId()
 {
-    return this->label;
+    return this->id;
 }
 
-bool Color::isUsed()
+std::vector<unsigned int> Color::getUsers()
 {
-    return this->vertexes.size() > 0 ? true : false;
+    return this->used_by;
 }
 
-void Color::setUser(Vertex *vertex)
+unsigned int Color::getUsageCounter()
 {
-    this->vertexes.push_back(vertex);
+    return this->used_by.size();
+}
+
+void Color::setId(unsigned int color_id)
+{
+    this->id = color_id;
+}
+
+void Color::addUser(unsigned int vertex)
+{
+    this->used_by.push_back(vertex);
+}
+
+void Color::removeUser(unsigned int vertex)
+{
+    for (auto i = this->used_by.begin(); i != this->used_by.end(); ++i)
+    {
+        if ((*i) == vertex)
+        {
+            this->used_by.erase(i);
+            return;
+        }
+    }
 }

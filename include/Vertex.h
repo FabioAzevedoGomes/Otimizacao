@@ -1,49 +1,79 @@
-/**
- * This class models a vertex in a Graph, with some of it's attributes 
- * being designed for more efficient color compatibility checks during 
- * the generation of neighbors
- * 
- * Author: Fábio de Azevedo Gomes 
- */
 #ifndef VERTEX_H
 #define VERTEX_H
 
+#include <vector>
+
 #include "Color.h"
 
-// Forward declaration of color
 class Color;
 
 class Vertex
 {
 private:
-    static int vertex_count; // Total number of vertexes generated
+    // Vertex unique identifier
+    unsigned int id;
 
-    int label;                         // Label given to this vertex
-    Color *color;                      // Color given to this vertex
-    std::vector<Vertex *> adjacent_to; // Vertexes adjacent to this one
+    // Color assigned to vertex
+    unsigned int color;
+
+    // Vertexes that are adjacent to vertex
+    std::vector<unsigned int> adjacency_list;
 
 public:
     /**
-     * @brief Vertex constructor 
+     * @brief Vertex constructor
      */
-    Vertex();
+    Vertex(unsigned int vertex_id = -1, unsigned int color_id = -1);
 
     /**
-     * @brief Vertex destructor 
+     * @brief Class destructor 
      */
     ~Vertex();
 
-    // Getters
-    Color *getColor();
-    int getLabel();
-    std::vector<Vertex *> getAdjacency();
+    /**
+     * @brief Returns the adjacency list for this vertex 
+     * @returns std::vector containing every vertex adjacent to this
+     */
+    std::vector<unsigned int> getAdjacent();
 
-    // Setters
-    void setColor(Color *color);
-    void addAdjacent(Vertex *vertex);
+    // SETTERS
 
-    // Checkers
-    bool canUse(Color *color);
+    /**
+     * @brief Inserts a new vertex and adjacent
+     */
+    void setAdjacent(unsigned int vertex_id);
+
+    /**
+     * @brief Labels this vertex with given id 
+     */
+    void setId(unsigned int vertex_id);
+
+    /**
+     * @brief Gives the provided color to the vertex, if it can receive it
+     * @param color The color given to this vertex 
+     */
+    void setColor(unsigned int color_id);
+
+    // GETTERS
+
+    /**
+     * @brief Returns this vertex's color 
+     */
+    unsigned int getColor();
+
+    /**
+     * @brief Returns this vertex's identifier 
+     */
+    unsigned int getId();
+
+    // CHECKERS
+
+    /**
+     * @brief Checks if this vertex is adjacent to given vertex
+     * @param vertex_id
+     */
+    bool isAdjacentTo(unsigned int vertex_id);
+
 };
 
-#endif
+#endif //VERTEX_H
