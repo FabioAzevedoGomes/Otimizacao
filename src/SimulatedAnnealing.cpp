@@ -1,160 +1,28 @@
 #include "SimulatedAnnealing.h"
 
-SimulatedAnnealing::SimulatedAnnealing(float t_, float k_, float r_, std::string file)
+SimulatedAnnealing::SimulatedAnnealing(double t, double k, double r, unsigned int max_neighbors, unsigned int max_iterations, std::string filename) : G(filename)
 {
-    std::ifstream in_file;
+    this->temperature = t;
+    this->cooling_factor = r;
+    this->constant_k = k;
+    this->max_iterations = max_iterations;
+    this->max_neighbors = max_neighbors;
 
-    // Initialize values
-    this->k = k_;
-    this->temperature = t_;
-
-    // Check cooling factor
-    if (r_ <= 0 || r_ >= 1)
-        throw new std::runtime_error("Cooling factor must be in the interval (0,1)!");
-
-    this->cooler = r_;
-
-    // Try to open file
-    in_file.open(file, std::ifstream::in);
-
-    if (in_file.is_open())
-        this->prepareData(in_file);
-    else
-        throw std::runtime_error("Input file does not exist!");
-
-    // Close file
-    in_file.close();
-
-    // Upadte state vertex count
-    State::setVertexCount(this->vertex_count);
-}
-
-SimulatedAnnealing::~SimulatedAnnealing()
-{
-    for (auto i = this->adj.begin(); i != this->adj.end(); ++i)
-        (*i).clear();
-
-    this->adj.clear();
-}
-
-void SimulatedAnnealing::outputInfo()
-{
-    // Output information about problem dimensions
-    std::cout << "Problem dimensions are: " << std::endl;
-    std::cout << "* " << this->vertex_count << " vertices" << std::endl;
-    std::cout << "* " << this->edge_count << " edges" << std::endl;
-
-    // Output adjacency matrix
-    std::cout << "Adjacency matrix is: " << std::endl;
-    for (int i = 0; i < this->vertex_count; ++i)
-    {
-        for (int j = 0; j < this->vertex_count; ++j)
-            std::cout << this->adj[i][j] << " ";
-        std::cout << std::endl;
-    }
-}
-
-bool SimulatedAnnealing::canUse(int v, int c, std::vector<std::vector<bool>> vertex_colors)
-{
-    bool can_use = true;
-
-    // Iterate vertex adjacency matrix
-    for (int j = 0; can_use && j < this->vertex_count; ++j)
-    {
-        // If nodes are connected
-        if (this->adj[v][j] == 1)
-        {
-            // If If the same, return false
-            if (vertex_colors[j][c])
-            {
-                can_use = false;
-            }
-        }
-    }
-
-    return can_use;
-}
-
-void SimulatedAnnealing::prepareData(std::ifstream &file)
-{
-    std::string line;  // Line read from file
-    std::string token; // Token read from line
-
-    int first, second; // Nodes that are part of an edge
-
-    while (std::getline(file, line))
-    {
-        // Ignore blank lines
-        if (line.size() > 0)
-        {
-            // Stream input line
-            std::stringstream linestream(line);
-
-            // Get line descriptor token
-            getline(linestream, token, ' ');
-
-            // Check information type
-            switch (token.at(0))
-            {
-            case 'p': // Definition of graph
-
-                getline(linestream, token, ' '); // 'edge'
-
-                // Get vertex count
-                getline(linestream, token, ' ');
-                this->vertex_count = atoi(token.c_str());
-
-                // Set adjacency matrix size
-                this->adj.resize(this->vertex_count);
-                for (int i = 0; i < this->vertex_count; ++i)
-                    this->adj[i].resize(this->vertex_count);
-
-                // Get edge count
-                getline(linestream, token, ' ');
-                this->edge_count = atoi(token.c_str());
-
-                break;
-            case 'e': // Edge
-
-                // Get first vertex
-                getline(linestream, token, ' ');
-                first = atoi(token.c_str());
-
-                // Get second vertex
-                getline(linestream, token, ' ');
-                second = atoi(token.c_str());
-
-                // Update adjacency matrix
-                adj[first - 1][second - 1] = 1;
-                adj[second - 1][first - 1] = 1;
-
-                break;
-            default: // Do nothing
-                break;
-            }
-        }
-    }
-
-    // Prepate GLPK file
-    this->prepareGLPK("../dat/data.dat");
-
-    // Output information about the instance
-    this->outputInfo();
-}
-
-void SimulatedAnnealing::prepareGLPK(std::string filename)
-{
     // File for GLPK-ready output
-    std::ofstream data(filename);
+    std::ofstream data("data.dat");
 
     // Write output file opening statement
     data << "data;" << std::endl
          << std::endl;
 
+    // Write big M
+    data << "# Big M parameter" << std::endl;
+    data << "param M := " << this->G.getVertexCount() << std::endl;
+
     // Write vertex set
     data << "# Vertex set (Numbered 0 through N-1)" << std::endl;
     data << "set V :=";
-    for (int i = 0; i < this->vertex_count; i++)
+    for (unsigned int i = 0; i < this->G.getVertexCount(); i++)
     {
         data << " " << i;
     }
@@ -164,7 +32,7 @@ void SimulatedAnnealing::prepareGLPK(std::string filename)
     // Write color set
     data << "# Color set (Assuming worst case scenario where nColors = nVertexes)" << std::endl;
     data << "set C :=";
-    for (int i = 0; i < this->vertex_count; i++)
+    for (unsigned int i = 0; i < this->G.getVertexCount(); i++)
     {
         data << " " << i;
     }
@@ -174,12 +42,12 @@ void SimulatedAnnealing::prepareGLPK(std::string filename)
     // Write adjacency matrix
     data << "# Graph adjacency matrix" << std::endl;
     data << "param graph :=" << std::endl;
-    for (int i = 0; i < this->vertex_count; i++)
+    for (unsigned int i = 0; i < this->G.getVertexCount(); i++)
     {
-        for (int j = 0; j < this->vertex_count; j++)
+        for (unsigned int j = 0; j < this->G.getVertexCount(); j++)
         {
-            data << " [" << i << ", " << j << "] " << this->adj[i][j];
-            if (i < this->vertex_count - 1 || j < this->vertex_count - 1)
+            data << " [" << i << ", " << j << "] " << this->G.getVertex(i)->isAdjacentTo(j);
+            if (i < this->G.getVertexCount() - 1 || j < this->G.getVertexCount() - 1)
             {
                 data << ",";
             }
@@ -196,9 +64,12 @@ void SimulatedAnnealing::prepareGLPK(std::string filename)
     data.close();
 }
 
-// ALGORITHM LOGIC
+SimulatedAnnealing::~SimulatedAnnealing()
+{
+    // nil
+}
 
-int SimulatedAnnealing::run()
+void SimulatedAnnealing::run()
 {
     /**
      * Pseudo-Algorithm:
@@ -216,65 +87,139 @@ int SimulatedAnnealing::run()
 
     double prob_kt = 0;        // Probability that a worse state will be chosen
     uint iteration_number = 1; // Current iteration number
-    State *neighbor;           // Generated neighbor for a state
-    int maxNeighbors = 10;     // Number of neighbors generated each iteration
-    double lambda = 0.0001;    // Lower limit for temperature before stopping
 
-    // DEBUG
-    std::cout << "Generating starting state...";
+    std::vector<State *> neighbors;
+    State *neighbor = NULL; // Generated neighbor for a state
+
+    double lambda = 0.00000001; // Lower limit for temperature before stopping
+
+    // Log files
+    std::ofstream log_file("log.dat");
+    std::ofstream neigh_file("neighbors.dat");
+
+    // Output information
+    std::cout << "[INFO]: Generating starting state..." << std::endl;
+
+    // Start measuring time
+    auto start = std::chrono::system_clock::now();
 
     // Generate starting state
-    State *current_state = State::generateStartingState(this);
+    State *current_state = State::generateStartingState(this->G);
 
-    std::cout << " Done." << std::endl;
+    std::cout << "[INFO]: Done." << std::endl;
 
     // While temperature is not 0 (STOP 2)
     while (this->temperature > lambda)
     {
         // Log
-        std::cout << "Starting iteration " << iteration_number << std::endl;
+        std::cout << "========================================================" << std::endl;
+        std::cout << "[INFO]: Iteration: " << iteration_number << std::endl;
+        std::cout << "[INFO]: Temperature: " << this->temperature << std::endl;
+        std::cout << "[INFO]: Selection probability denominator (k*t): " << prob_kt << std::endl;
+        std::cout << "[INFO]: Current state value: " << current_state->getValue() << std::endl;
+        log_file << iteration_number << "  " << current_state->getValue() << std::endl;
 
         // Calculate new selection probability denominator with new temperature
-        prob_kt = this->k * this->temperature;
+        prob_kt = this->constant_k * this->temperature;
+
+        neighbors.clear();
+        for (unsigned int i = 0; i < this->max_neighbors; ++i)
+        {
+            neighbor = current_state->generateNeighbor(iteration_number, this->temperature);
+            neighbors.push_back(neighbor);
+        }
 
         // Iterate neighbors (STOP 1)
-        for (int i = 0; i < maxNeighbors; ++i)
+        for (unsigned int i = 0; i < this->max_neighbors; ++i)
         {
-            // Generate neighbor
-            neighbor = current_state->generateNeighbor(this);
+            // Get neighbor
+            neighbor = neighbors[i];
+
+            // Log
+            neigh_file << iteration_number << "  " << neighbor->getValue() << std::endl;
 
             // If neighbor value is better than current value
             if (neighbor->getValue() <= current_state->getValue())
             {
-                current_state = neighbor; // Update current state
+                // Update current state
+                delete current_state;
+                current_state = neighbor;
             }
             else
             {
                 // With 1.0e-((f(s') - f(s))/k*t) probability
-                if (random() / RAND_MAX < std::exp(-(neighbor->getValue() - current_state->getValue()) / prob_kt))
+                if (random() / RAND_MAX < std::exp(-(double)(neighbor->getValue() - current_state->getValue()) / prob_kt))
                 {
                     // Assign worse state anyways
+                    delete current_state;
                     current_state = neighbor;
+                }
+                else
+                {
+                    // If neighbor was ignored, delete it
+                    delete neighbor;
                 }
             }
         }
+        neigh_file << std::endl;
 
         // Decrease temperature
-        this->temperature = this->temperature * this->cooler;
+        this->temperature = this->temperature * this->cooling_factor;
 
         // Increment iteration
         iteration_number++;
-
-        // TODO Save traversed states somewhere so they do not get re-visited?
     }
 
-    // Log
-    std::cout << "Finished with " << iteration_number - 1 << " iterations.";
+    // Stop timer
+    auto end = std::chrono::system_clock::now();
+    std::chrono::duration<double> elapsed_seconds = end - start;
+
+    // Free memory
+    delete current_state;
+
+    // Get best state
+    current_state = State::getBest();
+
+    // Check if final state is correct
+    current_state->checkCorrectness();
 
     // Best state
-    std::cout << "Best found state uses " << State::getBest()->getValue() << " colors" << std::endl;
-    std::cout << State::getBest()->getState() << std::endl;
+    std::cout << "[INFO]: Best found state uses " << current_state->getValue() << " colors" << std::endl;
+    std::cout << current_state->toString() << std::endl;
 
-    // Return best obtained value throughout the algorithm
-    return State::getBest()->getValue();
+    // Log
+    std::cout << "[INFO]: Finished in " << elapsed_seconds.count() << " seconds" << std::endl
+              << "[INFO]: Total iterations: " << iteration_number - 1 << std::endl;
+
+    // Close log files
+    log_file.close();
+    neigh_file.close();
+
+    // Free memory
+    delete current_state;
+
+    // Return
+    return;
+}
+
+int main(int argc, char **argv)
+{
+    // Parse command line input
+    if (argc < 8)
+    {
+        std::cerr << "Usage: " << argv[0] << " <seed> <temperature> <constant> <cooling-factor> <max-neighbors> <max-iterations> <input-file>" << std::endl;
+        return -1;
+    }
+
+    // Set psudo-random seed
+    srandom(atol(argv[1]));
+
+    // Create instance of simulated annealing with given parameters
+    SimulatedAnnealing algorithm(atof(argv[2]), atof(argv[3]), atof(argv[4]), atoi(argv[5]), atoi(argv[6]), argv[7]);
+
+    // Run algorithm
+    algorithm.run();
+
+    // Exit
+    return 0;
 }

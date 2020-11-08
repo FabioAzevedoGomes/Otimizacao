@@ -1,87 +1,105 @@
-/**
- * This file contains the State class, which models a possible state solution
- * modeled for the problem 
- * 
- * Author: Fábio de Azevedo Gomes
- */
-
-#include <vector>
-#include <sstream>
-#include <iostream>
-
 #ifndef STATE_H
 #define STATE_H
 
-#include "SimulatedAnnealing.h"
+#include <algorithm>
+#include <set>
 
-// Forward declaration of SimulatedAnnealing
-class SimulatedAnnealing;
+#include "Graph.h"
+#include "Vertex.h"
+#include "Edge.h"
+#include "Color.h"
 
 class State
 {
-public:
-    static int vertex_count; // Number of vertices per state (Same as colors in worst case scenario)
-    static State *best;      // The best state found throughout execution
+private:
+    // The graph
+    Graph G;
 
-    int val;                                         // Value of the current state
-    std::vector<std::vector<bool>> vertex_has_color; // If vertex v has color c (binary)
-    std::vector<bool> color_is_used;                 // If color c is used in the solution
+    // State value
+    unsigned int value;
+
+    // Best state found
+    static State *best;
 
 public:
     /**
-     * @brief State constructor
-     * @param vertex_has_color_ Matrix containing the colors given to each vertex
-     * @param color_is_used_    Vector containing information if each color was used
+     * @brief State constructor 
+     * @param graph The state's graph containing vertex, edge and color information
      */
-    State(std::vector<std::vector<bool>> vertex_has_color_, std::vector<bool> color_is_used_);
+    State(Graph graph);
 
     /**
-     * @brief State destructor
+     * @brief State destructor 
      */
     ~State();
 
     /**
-     * @brief Generates a random starting state based on the given seed 
-     * @param instance Problem instance
+     * @brief Computes state value
+     * @returns The computed state value 
      */
-    static State *generateStartingState(SimulatedAnnealing *instance);
+    unsigned int computeValue();
 
     /**
-     * @brief Generates a neighbor for this state. If neighbor value
-     * is better than 'best', update best to generated
-     * @param instance Problem instance
+     * @brief Returns this state's value
      */
-    State *generateNeighbor(SimulatedAnnealing *instance);
-
-    // GETTERS
+    unsigned int getValue();
 
     /**
-     * @brief Returns this state's value 
-     */
-    int getValue();
-
-    /**
-     * @brief Outputs this state composition
-     * to a string
-     */
-    std::string getState();
-
-    /**
-     * @brief Returns the best neighbor 
+     * @brief Returns best found state 
      */
     static State *getBest();
 
     /**
-     * @brief Sets the state vertex count for the problem
-     * @param count Vertex count
+     * @brief Copies given state to best found state 
+     * @param state the new best sate
      */
-    static void setVertexCount(int count);
+    static void setBest(State *state);
+
+    // STARTING STATE AND NEIGHBORHOOD GENERATION
 
     /**
-     * @brief Checks if this state is OK with the restrictions
-     * @returns True if OK, false otherwise 
+     * @brief Generates a starting state based on given graph 
      */
-    bool checkOK(SimulatedAnnealing *instance);
+    static State *generateStartingState(Graph graph);
+
+    /**
+     * @brief Generates a starting state using a greedy
+     * color selection strategy 
+     */
+    static State *greedyStart(Graph graph);
+
+    /**
+     * @brief Generates a neighbor for this state
+     * @param iteration_number The current iteration
+     * @param temperature The current temperature, for dynamic neighbor generation 
+     */
+    State *generateNeighbor(unsigned int iteration_number, double temperature);
+
+    /**
+     * @brief Randomizes the color of n vertexes
+     * in this state's graph 
+     * @param n Amount of vertices being randomized
+     */
+    void randomizeVertexColor(unsigned int n);
+
+    /**
+     * @brief Performs a local search to attempt
+     * to lower the number of colors used by one
+     */
+    void localSearch();
+
+    // CHECKS AND INFORMATION
+
+    /**
+     * @brief Checks if this state is correct, i.e. does not
+     * violate the Graph Coloring restrictions
+     */
+    bool checkCorrectness();
+
+    /**
+     * @brief Outputs the state composition to a string format 
+     */
+    std::string toString();
 };
 
-#endif
+#endif // STATE_H
