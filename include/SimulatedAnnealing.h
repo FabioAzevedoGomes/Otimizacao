@@ -15,6 +15,8 @@ class SimulatedAnnealing
 private:
     // Input graph
     Graph G;
+    std::string filename;
+    long seed;
 
     // Algorithm values
     double temperature;
@@ -28,6 +30,7 @@ private:
 public:
     /**
      * @brief Algorithm constructor
+     * @param seed           Random number generator seed
      * @param t              Temperature
      * @param r              Cooling factor
      * @param k              Constant
@@ -35,7 +38,7 @@ public:
      * @param max_iterations Maximum number of iterations allowed
      * @param filename       File containing graph
      */
-    SimulatedAnnealing(double t, double k, double r, unsigned int max_neighbors, unsigned int max_iterations, std::string filename);
+    SimulatedAnnealing(long seed, double t, double k, double r, unsigned int max_neighbors, unsigned int max_iterations, std::string filename);
 
     /**
      * @brief Class destructor 

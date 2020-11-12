@@ -144,14 +144,16 @@ State *State::generateNeighbor(unsigned int iteration_number, double temperature
     if (neighbor->getValue() < State::best->getValue())
         State::setBest(neighbor);
 
+    neighbor->checkCorrectness();
+
     // Return neighbor
     return neighbor;
 }
 
 void State::randomizeVertexColor(unsigned int n)
 {
-    int v_i = -1;
-    int c_i = -1;
+    unsigned int v_i = (unsigned int)-1;
+    unsigned int c_i = (unsigned int)-1;
     std::vector<unsigned int> unavailable_colors;
     std::vector<unsigned int> available_colors;
     std::vector<unsigned int> adjacency;
@@ -203,7 +205,7 @@ void State::randomizeVertexColor(unsigned int n)
             {
                 if (available_colors[i] < this->value)
                 {
-                    c_i = available_colors[i == available_colors.size() - 1 ? i : i + 1];
+                    c_i = available_colors[(unsigned int)i == available_colors.size() - 1 ? i : i + 1];
                     i = -1;
                 }
             }

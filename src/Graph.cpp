@@ -31,10 +31,17 @@ Graph::Graph(std::string filename)
             {
             case 'p': // Definition of graph
             {
-                getline(linestream, token, ' '); // 'edge'
+                do
+                {
+                    getline(linestream, token, ' '); // 'edge'
+                } while (token.size() == 0 || token.at(0) == ' ');
 
                 // Get vertex count
-                getline(linestream, token, ' ');
+                do
+                {
+                    getline(linestream, token, ' ');
+                } while (token.size() == 0 || token.at(0) == ' ');
+
                 this->vertex_count = atoi(token.c_str());
 
                 // Resize vertex set
@@ -45,18 +52,30 @@ Graph::Graph(std::string filename)
                     ;
 
                 // Get edge count
-                getline(linestream, token, ' ');
+                do
+                {
+                    getline(linestream, token, ' ');
+                } while (token.size() == 0 || token.at(0) == ' ');
+
                 this->edge_count = atoi(token.c_str());
             }
             break;
             case 'e': // Edge
             {
                 // Get first vertex
-                getline(linestream, token, ' ');
+                do
+                {
+                    getline(linestream, token, ' ');
+                } while (token.size() == 0 || token.at(0) == ' ');
+
                 first = atoi(token.c_str());
 
                 // Get second vertex
-                getline(linestream, token, ' ');
+                do
+                {
+                    getline(linestream, token, ' ');
+                } while (token.size() == 0 || token.at(0) == ' ');
+
                 second = atoi(token.c_str());
 
                 // Update vertexes

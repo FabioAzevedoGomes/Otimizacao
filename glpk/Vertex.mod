@@ -12,7 +12,6 @@
 #
 
 # Input parameters
-
 set V; # Set containing every vertex in the input graph, numbered 1 through N
 set C; # Set containing every color possible to be used in the solution, numbered 1 through M
 
@@ -37,8 +36,11 @@ subject to OneColorLower { v in V }:          # Each node can only have 1 assign
 subject to OneColorUpper { v in V }:          # Each node can only have 1 assigned color
     sum {c in C} vertex_has_color[v, c] >= 1; 
 
-subject to SameColorRestriction { u, v in V , c in C }: # No 2 nodes can have the same color
-    (graph[u,v]) * (vertex_has_color[u, c] + vertex_has_color[v, c]) <= 1
+subject to SameColorRestriction { u in V, v in V , c in C }: # No 2 nodes can have the same color
+    (graph[u,v]) * (vertex_has_color[u, c] + vertex_has_color[v, c]) <= 1;
     
 subject to MustChooseColor { c in C }: # Can only use color c if marked as used
-    sum {v in V} vertex_has_color[v, c] <= color_is_used[c] * M
+    sum {v in V} vertex_has_color[v, c] <= color_is_used[c] * M;
+
+end;
+

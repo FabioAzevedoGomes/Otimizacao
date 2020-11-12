@@ -1,12 +1,14 @@
 #include "SimulatedAnnealing.h"
 
-SimulatedAnnealing::SimulatedAnnealing(double t, double k, double r, unsigned int max_neighbors, unsigned int max_iterations, std::string filename) : G(filename)
+SimulatedAnnealing::SimulatedAnnealing(long seed, double t, double k, double r, unsigned int max_neighbors, unsigned int max_iterations, std::string filename) : G(filename)
 {
+    this->seed = seed;
     this->temperature = t;
     this->cooling_factor = r;
     this->constant_k = k;
     this->max_iterations = max_iterations;
     this->max_neighbors = max_neighbors;
+    this->filename = filename;
 
     // File for GLPK-ready output
     std::ofstream data("data.dat");
@@ -17,7 +19,7 @@ SimulatedAnnealing::SimulatedAnnealing(double t, double k, double r, unsigned in
 
     // Write big M
     data << "# Big M parameter" << std::endl;
-    data << "param M := " << this->G.getVertexCount() << std::endl;
+    data << "param M := " << this->G.getVertexCount() << ";" << std::endl;
 
     // Write vertex set
     data << "# Vertex set (Numbered 0 through N-1)" << std::endl;
@@ -93,12 +95,14 @@ void SimulatedAnnealing::run()
 
     double lambda = 0.00000001; // Lower limit for temperature before stopping
 
+    uint starting_state_value = 0; // Starting state value for benchmarking
+
     // Log files
     std::ofstream log_file("log.dat");
     std::ofstream neigh_file("neighbors.dat");
 
     // Output information
-    std::cout << "[INFO]: Generating starting state..." << std::endl;
+    //std::cout << "[INFO]: Generating starting state..." << std::endl;
 
     // Start measuring time
     auto start = std::chrono::system_clock::now();
@@ -106,17 +110,19 @@ void SimulatedAnnealing::run()
     // Generate starting state
     State *current_state = State::generateStartingState(this->G);
 
-    std::cout << "[INFO]: Done." << std::endl;
+    starting_state_value = current_state->getValue();
+
+    //std::cout << "[INFO]: Done." << std::endl;
 
     // While temperature is not 0 (STOP 2)
-    while (this->temperature > lambda)
+    while (this->temperature > lambda && iteration_number < this->max_iterations)
     {
         // Log
-        std::cout << "========================================================" << std::endl;
-        std::cout << "[INFO]: Iteration: " << iteration_number << std::endl;
-        std::cout << "[INFO]: Temperature: " << this->temperature << std::endl;
-        std::cout << "[INFO]: Selection probability denominator (k*t): " << prob_kt << std::endl;
-        std::cout << "[INFO]: Current state value: " << current_state->getValue() << std::endl;
+        //std::cout << "========================================================" << std::endl;
+        //std::cout << "[INFO]: Iteration: " << iteration_number << std::endl;
+        //std::cout << "[INFO]: Temperature: " << this->temperature << std::endl;
+        //std::cout << "[INFO]: Selection probability denominator (k*t): " << prob_kt << std::endl;
+        //std::cout << "[INFO]: Current state value: " << current_state->getValue() << std::endl;
         log_file << iteration_number << "  " << current_state->getValue() << std::endl;
 
         // Calculate new selection probability denominator with new temperature
@@ -184,16 +190,27 @@ void SimulatedAnnealing::run()
     current_state->checkCorrectness();
 
     // Best state
-    std::cout << "[INFO]: Best found state uses " << current_state->getValue() << " colors" << std::endl;
-    std::cout << current_state->toString() << std::endl;
+    //std::cout << "[INFO]: Best found state uses " << current_state->getValue() << " colors" << std::endl;
+    //std::cout << current_state->toString() << std::endl;
 
     // Log
-    std::cout << "[INFO]: Finished in " << elapsed_seconds.count() << " seconds" << std::endl
-              << "[INFO]: Total iterations: " << iteration_number - 1 << std::endl;
+    //std::cout << "[INFO]: Finished in " << elapsed_seconds.count() << " seconds" << std::endl
+    //          << "[INFO]: Total iterations: " << iteration_number - 1 << std::endl;
 
     // Close log files
     log_file.close();
     neigh_file.close();
+
+    // Open CSV file for benchmarking solutions and time
+    std::ofstream benchmark_file("benchmark.csv", std::ios_base::app);
+
+    // filename, seed, initial solution val, best solution val, time,
+    benchmark_file << filename << ", " << this->seed << ", " << starting_state_value << ", " << current_state->getValue() << ", " << elapsed_seconds.count() << std::endl;
+
+    if (this->seed == 10)
+        std::cout << "Done with " << this->filename << std::endl;
+
+    benchmark_file.close();
 
     // Free memory
     delete current_state;
@@ -215,7 +232,7 @@ int main(int argc, char **argv)
     srandom(atol(argv[1]));
 
     // Create instance of simulated annealing with given parameters
-    SimulatedAnnealing algorithm(atof(argv[2]), atof(argv[3]), atof(argv[4]), atoi(argv[5]), atoi(argv[6]), argv[7]);
+    SimulatedAnnealing algorithm(atol(argv[1]), atof(argv[2]), atof(argv[3]), atof(argv[4]), atoi(argv[5]), atoi(argv[6]), argv[7]);
 
     // Run algorithm
     algorithm.run();
